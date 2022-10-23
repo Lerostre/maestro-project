@@ -1,0 +1,252 @@
+﻿{% extends 'base.html' %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1 style="text-indent: 30px">{% block title %}       Введите свой запрос {% endblock %}</h1>
+
+<style>
+    #query_field {
+        background-color: #ffffff;
+        box-shadow: inset 0 0 5px 0 rgba(0,103,105, 0.2)
+    }
+
+    .pagination > li > a {
+        background-color: white;
+        color: #5A4181;
+    }
+
+        .pagination > li > a:focus,
+        .pagination > li > a:hover,
+        .pagination > li > span:focus,
+        .pagination > li > span:hover {
+            color: black;
+            background-color: #AFEEEE;
+            border-color: #ddd;
+        }
+
+    .pagination > .active > a {
+        color: white;
+        background-color: #009092 !Important;
+        border: solid 1px black !Important;
+    }
+
+        .pagination > .active > a:hover {
+            color: white;
+            background-color: #006769 !Important;
+            border: solid 1px #006769;
+        }
+
+    .btn {
+        border: solid 2px white;
+        background-color: #009092;
+        color: white;
+        outline: 0;
+    }
+
+        .btn:hover {
+            background-color: #006769; /* Green */
+            color: white;
+        }
+
+    .btn-primary:not(:disabled):not(.disabled): {
+        outline: 2px#006769;
+    }
+
+        .btn-primary:not(:disabled):not(.disabled):active {
+            border: solid 2px black;
+            background-color: #006769; /* Green */
+            color: white;
+            outline: 2px#006769;
+            box-shadow: 2px 2px 2px 1px #006769
+        }
+
+    mark {
+        -webkit-animation: 1s highlight 1s 1 normal forwards;
+        animation: 1s highlight 1s 1 normal forwards;
+        background-color: none;
+        background: linear-gradient(90deg, #006769 50%, rgba(255, 255, 255, 0) 50%);
+        background-size: 200% 100%;
+        background-position: 100% 0;
+    }
+
+    @-webkit-keyframes highlight {
+        to {
+            background-position: 0 0;
+            color: white
+        }
+    }
+
+    @keyframes highlight {
+        to {
+            background-position: 0 0;
+            color: white
+        }
+    }
+</style>
+
+<form method="post" class="container" style="margin-left: 15px">
+    <div class="ínfo" style="position: absolute; width:22%; right: 45px; background-color: yellow; float: right">
+        <div class="section w3-animate-opacity" id="myDIV" style="position: fixed; padding-left: 20px; padding-top: 10px; padding-bottom: 20px; background-color: rgba(175,238,238, 0.5); backdrop-filter: blur(10px); margin-right: 50px; margin-top: 7.5vh; display: none ">
+            <span id="id2"></span><h2>Правила введения запросов<a class="headerlink" title="Permalink to this headline"></a></h2>
+            <h3>
+                мама
+            </h3>
+            <p>слово без кавычек - находит все предложения с этим словом в любой его форме</p>
+            <h3>
+                "мама"
+            </h3>
+            <p>слово в кавычках - находит все предложения с этим словом именно в этой его форме</p>
+            <h3>
+                NOUN
+            </h3>
+            <p>часть речи - находит все предложения с данной частью речи</p>
+            <h3>
+                (")мама(")+NOUN
+            </h3>
+            <p>слово+часть речи - находит все вхождения леммы или словоформы в качестве данной части речи</p>
+            <p>Запросы можно вводить друг за р=другом, отделяя пробелом, в таком случае будет искаться вхождение набранной n-граммы</p>
+        </div>
+        <div class="section w3-animate-opacity" id="myDIV2" style="position: fixed; padding-left: 20px; background-color: rgba(175,238,238, 0.5); backdrop-filter: blur(10px); padding-right: 25px; padding-top: 10px; padding-bottom: 20px; margin-right: 25px; margin-top: 10vh; display: none ">
+            <span id="id2"></span><h2>Часть речи<a class="headerlink" href="#russian-pos" title="Permalink to this headline"></a></h2>
+            <div class="wy-table-responsive">
+                <table border="1" class="docutils">
+                    <colgroup>
+                        <col width="14%">
+                        <col width="40%">
+                        <col width="46%">
+                    </colgroup>
+                    <thead valign="bottom">
+                        <tr class="row-odd">
+                            <th class="head">Граммема</th>
+                            <th class="head">Значение</th>
+                            <th class="head">Примеры</th>
+                        </tr>
+                    </thead>
+                    <tbody valign="top">
+                        <tr class="row-even">
+                            <td>NOUN</td>
+                            <td>имя существительное</td>
+                            <td>хомяк</td>
+                        </tr>
+                        <tr class="row-odd">
+                            <td>ADJ</td>
+                            <td>имя прилагательное</td>
+                            <td>хороший</td>
+                        </tr>
+                        <tr class="row-odd">
+                            <td>DET</td>
+                            <td>относительное местоимение</td>
+                            <td>какой, который</td>
+                        </tr>
+                        <tr class="row-even">
+                            <td>VERB</td>
+                            <td>глагол</td>
+                            <td>говорю, говорит, говорил</td>
+                        </tr>
+                        <tr class="row-odd">
+                            <td>NUM</td>
+                            <td>числительное</td>
+                            <td>три, пятьдесят</td>
+                        </tr>
+                        <tr class="row-even">
+                            <td>ADV</td>
+                            <td>наречие</td>
+                            <td>круто</td>
+                        </tr>
+                        <tr class="row-odd">
+                            <td>PRON</td>
+                            <td>местоимение</td>
+                            <td>он</td>
+                        </tr>
+                        <tr class="row-odd">
+                            <td>ADP</td>
+                            <td>предлог</td>
+                            <td>в</td>
+                        </tr>
+                        <tr class="row-even">
+                            <td>CONJ</td>
+                            <td>союз</td>
+                            <td>и</td>
+                        </tr>
+                        <tr class="row-odd">
+                            <td>PART</td>
+                            <td>частица</td>
+                            <td>бы, же, лишь</td>
+                        </tr>
+                        <tr class="row-even">
+                            <td>INTJ</td>
+                            <td>междометие</td>
+                            <td>ой</td>
+                        </tr>
+                        <tr class="row-even">
+                            <td>PUNCT</td>
+                            <td>знак препинания</td>
+                            <td>. , !</td>
+                        </tr>
+                        <tr class="row-even">
+                            <td>H</td>
+                            <td>не размечено</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <form class="card card-sm">
+                <div class="card-body row no-gutters align-items-center">
+                    <div class="col-auto">
+                        <i class="fas fa-search h4 text-body"></i>
+                    </div>
+                    <!--end of col-->
+                    <div class="col">
+                        <input value="{{query}}" id="query_field" name="query" style="color: #006769" class="form-control form-control-lg form-control-borderless" type="search" placeholder="e.g. красивый NOUN">
+                    </div>
+                    <!--end of col-->
+                    <div class="col-auto">
+                        <button class="btn btn-lg btn-primary" type="submit">Search</button>
+                    </div>
+                    <!--end of col-->
+                </div>
+            </form>
+        </div>
+        <!--end of col-->
+    </div>
+</form>
+
+
+{% if pagination %}
+<div class="content" style="margin-left: 15px">
+    {% if total %}
+    <p>{{ total }} результатов</p>
+    {% endif %}
+    {{ pagination.links }}
+    {% for employee1, employee2 in items %}
+    <div class="container" style="display: flex; margin-left: 15px; max-width: 1280px;">
+        <div class="employee" style="width: 75%; padding-right: 15px;">
+            <p style="font-size: 20px">Номер в корпусе - {{ employee1["index"] }}</p>
+            <p style="font-size: 20px;padding-right: 10px">{{ highlight(employee1["sents"], query) |safe }}</p>
+            <div style="text-align: right; width:100%"><i>{{ employee1["titles"] }}</i></div>
+            <div style="text-align: right; padding-top:3px; width: 100%; padding-bottom:14px"><i>{{ employee1["dates"] }}.</i></div>
+        </div>
+        {% if employee2 %}
+        <div class="employee" style="flex: 75%; width: 75%; padding-left: 15px">
+            <p style="font-size: 20px">Номер в корпусе - {{ employee2["index"] }}</p>
+            <p style="font-size: 20px;">{{ highlight(employee2["sents"], query) |safe }}</p>
+            <div style="text-align: right; width:100%"><i>{{ employee2["titles"] }}</i></div>
+            <div style="text-align: right; padding-top:3px; width: 100%; padding-bottom:14px"><i>{{ employee2["dates"] }}.</i></div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {{ pagination.links }}
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,56 @@
+﻿{% extends 'base.html' %}
+
+{% block styles %}
+<!-- {{super()}} -->
+<!-- <link rel="stylesheet" type= "text/css" href="{{ url_for('static',filename='styles/style.css') }}"> -->
+{% endblock %}
+
+{% block content %}
+<h1>{% block title %} Create a New Post {% endblock %}</h1>
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+<form method="post" class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <form class="card card-sm">
+                <div class="card-body row no-gutters align-items-center">
+                    <div class="col-auto">
+                        <i class="fas fa-search h4 text-body"></i>
+                    </div>
+                    <!--end of col-->
+                    <div class="col">
+                        <input name="query" style="color: navy" class="form-control form-control-lg form-control-borderless" type="search" placeholder="Введите запрос">{{query}}</input>
+                    </div>
+                    <!--end of col-->
+                    <div class="col-auto">
+                        <button class="btn btn-lg btn-primary" type="submit" style="color: rgb(251, 232, 125)">Search</button>
+                    </div>
+                    <!--end of col-->
+                </div>
+            </form>
+        </div>
+        <!--end of col-->
+    </div>
+</form>
+
+
+{% if pagination %}
+<div class="content" style="">
+    {{ pagination.links }}
+    <div class="container">
+        {% for employee in items %}
+        <div class="employee">
+            <p><b>#{{ employee["index"] }}</b></p>
+            <p>{{ employee["sents"] }}</p>
+            <p>{{ employee["titles"] }}</p>
+            <p>{{ employee["dates"] }} years old.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {{ pagination.links }}
+</div>
+{% else %}
+<p><b>Пустой запрос</b></p>
+{% endif %}
+
+{% endblock %}

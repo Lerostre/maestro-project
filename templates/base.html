@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title style="text-indent: 30px">{% block title %} {% endblock %}</title>
+</head>
+
+<body>
+    <div class="w3-top" style="float: left; z-index: 10">
+        <div class="w3-bar w3-transparent">
+            <a class="w3-bar-item w3-button w3-padding-large w3-hide-medium w3-hide-large w3-right" href="javascript:void(0)" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+            <a href="{{url_for("index")}}" class="w3-bar-item w3-button w3-white">Главная</a>
+            <a href="{{url_for("search2")}}" class="w3-bar-item w3-button w3-white">Поиск</a>
+            <button onclick="myFunction3()" style="right: 0px; float:right; width:22.5vh" class="w3-bar-item w3-button">Тегсет</button>
+            <button onclick="myFunction2()" style="right: 0px; float: right; width:22.5vh" class="w3-bar-item w3-button">Запросы</button>
+        </div>
+    </div>
+    <div class="search-window">
+        <div class="container" style="margin-left: 50px; min-width: 100%; margin-top:100px">
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+            {% block content %} {% endblock %}
+        </div>
+    </div>
+
+    <script>
+        function myFunction() {
+            var x = document.getElementById("Demo");
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+        function myFunction2() {
+            var x = document.getElementById("myDIV");
+            var y = document.getElementById("myDIV2");
+            y.style.display = "none"
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        function myFunction3() {
+            var x = document.getElementById("myDIV2");
+            var y = document.getElementById("myDIV");
+            y.style.display = "none"
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+    </script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
+
