@@ -1,10 +1,9 @@
 ﻿import numpy as np
 import re
 from functools import reduce
+import pymorphy2
 
-from rnnmorph.predictor import RNNMorphPredictor
-
-predictor = RNNMorphPredictor(language="ru")
+morph = pymorphy2.MorphAnalyzer()
 
 
 def consecutive(x):
@@ -14,6 +13,7 @@ def consecutive(x):
     if len(x) > 2:
         return 1 if (x[0] < x[-1]) and (len(x)*(x[0]+x[-1])/2 == sum(x)) else 0
 
+    
 def search(request, sent_df, word_df, meta_df):
     sub_req = request.split()
     info = []
@@ -39,7 +39,7 @@ def search(request, sent_df, word_df, meta_df):
     if len(el_chars) == 1:
         sents, word_indices = list(el_chars[request].keys()), list(el_chars[request].values())
         for sent in sents:
-            new_info = extract_info(sent, word_indices, meta_df)
+            new_info = extract_info(sent, word_indices, meta_df, word_df, 1)
             if new_info:
                 info.append(new_info)
 
@@ -54,7 +54,7 @@ def search(request, sent_df, word_df, meta_df):
             diffs = np.apply_along_axis(consecutive, arr=grid, axis=1)
             word_indices = diffs[np.where(diffs == 1)]
             if word_indices.size > 0:
-                info.append(extract_info(sent, word_indices, meta_df))
+                info.append(extract_info(sent, word_indices, meta_df, word_df))
 
     return info
 
@@ -70,12 +70,12 @@ def replace_keep_case(word, replacement, text):
 
 
 def highlight(sentence, string):
-    if string[0] == '"':
-        string = string[1:-1]
-    if string[0].isascii():
-        return sentence
-    else:
+    sent_check = sentence.lower()
+    
+    if not string[0].isascii() and f"<mark>{string}</mark>".lower() not in sent_check:
         return replace_keep_case(string, f'<mark>{string}</mark>', sentence)
+    else:
+        return sentence
 
 
 def highlight2(sentence, string):
@@ -90,21 +90,33 @@ def highlight2(sentence, string):
     return sentence
 
 
-def extract_info(sent_indice, word_indice, meta_df):
+def extract_info(sent_indice, word_indice, meta_df, word_df, num=2):
     if sent_indice:
         row = meta_df.iloc[sent_indice]
-        return {"index": str(sent_indice), "sents": row.sentence,
+        sent = row.sentence
+        if num == 1:
+            words = [word_df.iloc[item].token for sublist in word_indice for item in sublist]
+            for word in words:
+                sent = highlight(sent, word)
+        #print(word_df.iloc[word_indice].pos)
+        return {"index": str(sent_indice), "sents": sent,
                "titles": row.title, "dates": row.date}
     else:
         return None
     
     
-def word_search(element, sent_df, word_df, mode="tokens", with_pos=False):
+def word_search(element, sent_df, word_df, mode="tokens", with_pos=False, is_normal=False):
     
-    if mode == "lemmas":
-        element = predictor.predict([element])[0].normal_form
-        print(element)
-        
+    res = {}
+    
+    print(element, mode, with_pos)
+
+    if mode == "lemmas" and not is_normal:
+        elements = query_parse(element)
+        for el in elements:
+            res.update(word_search(el, sent_df, word_df, mode, with_pos, is_normal=True))
+        return res
+
     elif mode == "tokens":
         element = element[1:-1]
 
@@ -112,7 +124,7 @@ def word_search(element, sent_df, word_df, mode="tokens", with_pos=False):
         indices = []
         word, pos = element.split("+")
         word_indices = word_search(word, sent_df, word_df, mode)
-        pos_indices = word_search(pos, sent_df, word_df, mode="poss")
+        pos_indices = word_search(pos.upper(), sent_df, word_df, mode="poss")
         indices_candidates = word_indices.keys() & pos_indices.keys()
         morph_indices = []
         for sent in indices_candidates:
@@ -126,12 +138,26 @@ def word_search(element, sent_df, word_df, mode="tokens", with_pos=False):
         indices = np.where(v(sent_df[mode]) == True)[0]
         row = sent_df.iloc[indices]
         morph_indices = row[mode].apply(lambda x: x[element])
-        if with_pos:
-        #print(row[mode].apply(lambda x: x[word]))  # индексы находятся списками
-            morph = word_df.iloc[morph_indices.sum()]
-            u = np.vectorize(lambda x: x == pos)
 
     if not any(morph_indices):
         indices = []
 
     return dict(zip(indices, morph_indices))
+
+
+def query_parse(word):
+    variants = []
+
+    for i in morph.parse(word):
+        form = i.normal_form
+        if form not in variants:
+            variants.append(form)
+
+    return variants
+
+
+def morphy_converter(x):
+    converter = {"ADJF": "ADJ", "ADJS": "ADJ", "COMP": "ADJ",
+                "INFN": "VERB", "PRTF": "VERB", "PRTS": "VERB", "GRND": "VERB",
+                "NUMR": "NUM", "ADVB": "ADV", "PREP": "ADP", "PTCL": "PART"}
+    return converter[x] if x in converter else x
